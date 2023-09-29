@@ -15,9 +15,8 @@ for i in range(0, 8192 ):
 test_set = fullset
 
 training_set_lengths = [32, 128, 512, 2048, 8192]
-
-fh = open("problem_3.dat", "w")
-fh.write("training_set_length, n_nodes, err_n\n")
+trainin_set_lengths_log2 = [5, 7, 9, 11, 13]
+errn_list = []
 
 for length  in training_set_lengths:
 	
@@ -43,8 +42,13 @@ for length  in training_set_lengths:
 			correct = correct+1
 		else:
 			errn = errn+1
+	errn_list.append(errn)
 	#ddb.draw_decision_boundary(model_function=clf.predict, grid_abs_bound=1)
-	fh.write(str(length) +", " + str(clf.tree_.node_count) + ", " + str(errn) + "\n")
-fh.close() 
-		
+	print(str(length) +", " + str(clf.tree_.node_count) + ", " + str(errn) + "\n")
+
+
+plt.plot(trainin_set_lengths_log2, errn_list)
+plt.xlabel("log2(n)")
+plt.ylabel("errn")
+plt.show()
 	

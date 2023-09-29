@@ -6,61 +6,61 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def cal_log_mse (poly, test_set):
+	y_val= []
+	for i in range(0,len(test_set)):
+		y_val.append(Polynomial(poly.coef[::-1])(test_set[i]))
+
+	err_n = []
+	for i in range(0,len(test_set)):
+		err_n.append(math.sin(test_set[i]) - y_val[i])
+
+	sum_err = 0
+	for i in err_n:
+		sum_err = sum_err + i*i
+	sum_err = sum_err/len(test_set)
+
+	return math.log(sum_err)
+		
+
+
+
+
 a=0
-b=8*math.pi
-x = np.linspace(a,b,100).tolist()
+b=math.pi
+training_set_base = np.linspace(a,b,100).tolist()
+test_set = np.linspace(a,b,50).tolist()
 y= []
-for i in x:
+for i in training_set_base:
 	y.append(math.sin(i))
 
-poly = lagrange(x,y)
+poly = lagrange(training_set_base,y)
 
-#print(poly.coef)
-y_val= []
-for i in range(0,len(x)):
-	y_val.append(Polynomial(poly.coef[::-1])(x[i]))
-plt.plot(x, y_val, marker= "o")
-plt.show()
+#Calculate training_error
 
-sum_err =0
-
-print(Polynomial(poly.coef[::-1]).coef)
-
-for i in range(0,len(x)):
-
-	err = Polynomial(poly.coef[::-1])(x[i]) - y[i]
-	sum_err = sum_err + err*err
-
-mse = sum_err/100
+print ("MSE on training set without noise ", str(cal_log_mse(poly, training_set_base)))
+print ("MSE on test set without noise ", str(cal_log_mse(poly, test_set)))
 
 
-
-
-print ("MSE on training set without noise ", str(sum_err))
-
-variance = [0.1, 0.5, 1, 1.5, 2]
+variance = [1, 1.5, 2, 2.5, 3, 3.5, 4]
 
 for var in variance:
 	noise = np.random.normal(0, var, 100)
+
+	training_set_with_noise = []
 	
-	for i in range(0,len(x)):
-		x[i] =x[i] +noise[i]
+	for i in range(0,len(training_set_base)):
+		training_set_with_noise.append(training_set_base[i] +noise[i])
 	
 	y=[]
-	for i in x:
+	for i in training_set_with_noise:
 		y.append(math.sin(i))
 
-	poly = lagrange(x,y)
+	poly = lagrange(training_set_with_noise,y)
 	
-	plt.scatter(x, y, marker= "o")
-	plt.show()
-
-	for i in range(0,len(x)):
-		err = Polynomial(poly.coef[::-1])(x[i]) - y[i]
-		sum_err = sum_err + err*err
+	print ("MSE on training set with noise with variance "+ str(var) + " is: "+  str(cal_log_mse(poly, training_set_with_noise)))
 	
-	mse = sum_err/100
-	print ("MSE on training set with noise of variance  ", str(var), " is: " , str(mse))
+	print ("MSE on test set with noise with variance "+ str(var) + " is: "+  str(cal_log_mse(poly, test_set)))
 
 
 

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn import tree as sktree
 import numpy as np
 
-training_set = decision_tree.parse_dataset_file("Homework_2_data/D2.txt")
+training_set = decision_tree.parse_dataset_file("Homework_2_data/D1.txt")
 
 #### Our Decision tree
 fh= open("self_tree.txt", "w")

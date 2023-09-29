@@ -15,17 +15,24 @@ test_set = fullset
 
 training_set_lengths = [32, 128, 512, 2048, 8192]
 
-fh = open("problem_2_7.dat", "w")
-fh.write("training_set_length, n_nodes, err_n\n")
+length_base_2 = [5, 7, 9, 11, 13]
+errn =[]
+
 
 for length  in training_set_lengths:
 	tree = decision_tree.simple_tree()
 	tree.build_tree(training_set[0:length-1])
-	errn = tree.test(test_set)
+	err=tree.test(test_set)
+	errn.append(err)
 	n_nodes = tree.n_nodes	
-	fh.write(str(length) +", " + str(n_nodes) + ", " + str(errn) + "\n")
-	ddb.draw_decision_boundary(model_function=tree.predict, grid_abs_bound=1.5, training_set=training_set[0:length-1])
-fh.close()
+	print(str(length) +", " + str(n_nodes) + ", " + str(err) + "\n")
+	ddb.draw_decision_boundary("D" + str(length)+ " Decision Boundary" ,model_function=tree.predict, grid_abs_max=1.5,grid_abs_min=-1.5, training_set=training_set[0:length-1])
+
+
+plt.plot(length_base_2, errn)
+plt.xlabel("log2(n)")
+plt.ylabel("errn")
+plt.show()
 	
 
 	

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Callable
 
-def draw_decision_boundary( model_function:Callable, grid_abs_max:float=3.0, grid_abs_min:float=-3.0,training_set=[],savefile:str=None):
+def draw_decision_boundary( title,model_function:Callable, grid_abs_max:float=3.0, grid_abs_min:float=-3.0,training_set=[],savefile:str=None):
 
 #    `model_function` should be your model's formula for evaluating your decision tree, returning either `0` or `1`.
 #    \n`grid_abs_bound` represents the generated grids absolute value over the x-axis, default value generates 50 x 50 grid.
@@ -17,7 +17,7 @@ def draw_decision_boundary( model_function:Callable, grid_abs_max:float=3.0, gri
 			xdata.append([xval[i],xval[j]])
 		
 
-	df = pd.DataFrame(data=xdata,columns=['x_1','x_2']) # creates a dataframe to standardize labels
+	df = pd.DataFrame(data=xdata,columns=['x[0]','x[1]']) # creates a dataframe to standardize labels
 	df['y'] = df.apply(model_function,axis=1) # applies model from model_function arg
 	d_columns = df.columns.to_list() # grabs column headers
 	y_label = d_columns[-1] # uses last header as label
@@ -35,29 +35,41 @@ def draw_decision_boundary( model_function:Callable, grid_abs_max:float=3.0, gri
 		df_set = df[df[y_label]==label] # sort according to label
 		set_x = df_set[d_xfeature] # grab x_1 feature set
 		set_y = df_set[d_yfeature] # grab x_2 feature set
-		plt.scatter(set_x,set_y,c=colors[i],marker='s', s=1) # marker='s' for square, s=40 for size of squares large enough
-		legend_labels.append(f"""{y_label} = {label}""") # apply labels for legend in the same order as sorted dataframe
+		plt.scatter(set_x,set_y,c=colors[i],marker='s', s=20) # marker='s' for square, s=40 for size of squares large enough
+		legend_labels.append(f"""predict {y_label} = {label}""") # apply labels for legend in the same order as sorted dataframe
 	
-	plt.title("Model Decision Boundary Example", fontsize=12) # set plot title
+	plt.title(title, fontsize=12) # set plot title
 	ax = plt.gca() # grab to set background color of plot
 	ax.set_facecolor('#2b2d2e') # set aforementioned background color in hex color
-	plt.legend(legend_labels) # create legend with sorted labels
 	if(len(training_set)):
-		X1= []
-		X2= []
-		Y= []
+		X1_Y0= []
+		X2_Y0= []
+		X1_Y1= []
+		X2_Y1= []
+		Y1=[]
+		Y0 = []
 		blue = (0,0,1)
 		red = (1,0,0)
 		for item in training_set:
-			X1.append(item[0])
-			X2.append(item[1])
 			if(item[2] ==1):
-				Y.append(red)
+				X1_Y1.append(item[0])
+				X2_Y1.append(item[1])
+				Y1.append(blue)	
 			else:
-				Y.append(blue)	
+				X1_Y0.append(item[0])
+				X2_Y0.append(item[1])
+				Y0.append(red)	
+			
 
-		plt.scatter(x=X1, y=X2, c=Y, s=1)
-	
+		plt.scatter(x=X1_Y0, y=X2_Y0, c=Y0, s=2)
+		legend_labels.append("training_set y=0")
+
+		plt.scatter(x=X1_Y1, y=X2_Y1, c=Y1, s=2)
+		legend_labels.append("training_set y=1")
+
+	plt.legend(legend_labels) # create legend with sorted labels
+
+
 	if savefile is not None: # save your plot as .png file
 		plt.savefig(savefile)
 	plt.show() # show plot with decision bounds

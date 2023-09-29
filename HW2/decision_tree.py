@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import math
+import pyflowchart  as fct
 
 def parse_dataset_file(filename):
 	fh = open(filename, "r")
@@ -51,6 +52,9 @@ class node:
 		self.feature_index =0
 		self.threshold=0.0
 		self.prediction=0
+		self.candidate_splits =[]
+		self.gain_ratio_info = []
+		self.node_num = 0
 
 	def predict(self, x):
 		if self.is_leaf:
@@ -64,15 +68,24 @@ class node:
 	def get_indent(self, indent):
 		return "   "*indent
 	
-	def print_node(self, fh, indent):
+	def print_node(self):
+		'''
 		if(self.is_leaf):
-			fh.write(self.get_indent(indent) + "predict :" + str(self.prediction)+"\n")
+			fh.write(self.get_indent(indent) + "Node: " + str(self.node_num) + " predict :" + str(self.prediction)+"\n")
 		else:
-			fh.write(self.get_indent(indent) + "if x[" + str(self.feature_index) +"] >= " + str(self.threshold) + ":\n")
+			fh.write(self.get_indent(indent) + "Node: " + str(self.node_num) + "  " + "x[" + str(self.feature_index) +"] >= " + str(self.threshold) + ":\n")
 			
 			self.right.print_node(fh,indent+1)
-			fh.write(self.get_indent(indent) + "else:\n")
+			fh.write(self.get_indent(indent) + "Node: " + str(self.node_num) + "  " + "x[" + str(self.feature_index) +"] < " + str(self.threshold) + ":\n")
 			self.left.print_node(fh, indent+1)
+		'''
+		if(self.is_leaf):
+			return fct.OperationNode(" predict :" + str(self.prediction))
+		else:
+			c = fct.ConditionNode("x[" + str(self.feature_index) +"] >= " + str(self.threshold))
+			c.connect_yes(self.right.print_node())
+			c.connect_no(self.left.print_node())
+			return c
 
 class simple_tree:
 	def __init__(self):
@@ -94,8 +107,9 @@ class simple_tree:
 
 		
 
-	def print_tree(self,fh):
-		self.root.print_node(fh, 0)
+	def print_tree(self,name):
+		fc = fct.Flowchart(self.root.print_node())
+		fct.output_html(name, name, fc.flowchart())
 
 	def predict(self, x):
 		return self.root.predict(x)
@@ -119,7 +133,16 @@ class simple_tree:
 	def build_subtree(self, training_set):
 		root_node = node()
 		self.n_nodes = self.n_nodes+1
+		root_node.node_num = self.n_nodes-1
 		candidate_splits = self.find_candidate_splits(training_set)
+		root_node.candidate_splits = candidate_splits
+
+		# Debug information:
+		
+		for split in candidate_splits:
+			root_node.gain_ratio_info.append(self.calc_information_gain_and_gain_ratio(training_set, split))
+
+
 		stopping_criteria_l =self.stopping_criteria(candidate_splits, training_set)
 		if stopping_criteria_l[0]==1:
 			root_node.is_leaf=1
@@ -153,10 +176,12 @@ class simple_tree:
 		for i in range(0,2):
 			training_set_sorted = self.sort( training_set, i)
 			for k in range(0, len(training_set_sorted)):
-				if not k==0:
-					if not (training_set_sorted[k][2] == training_set_sorted[k-1][2]):
-						split = [i, training_set_sorted[k][i]]
-						candidate_splits.append(split)
+				if not (training_set_sorted[k][2] == training_set_sorted[k-1][2]):
+					split = [i, training_set_sorted[k][i]]
+					candidate_splits.append(split)
+
+		
+		
 		return candidate_splits 
 					
 				
@@ -268,6 +293,90 @@ class simple_tree:
 		return gain_ratio
 	
 
+	def calc_information_gain_and_gain_ratio(self, training_set, split):
+
+		return_list = []
+		entropy_x = self.calculate_entropy_of_split( training_set, split)
+		
+
+		#calculating entropy of the training set
+		items_1 =0
+		items_0 =0
+		items_total = len(training_set)
+		for item in training_set:
+			if(item[2] ==0):
+				items_0 = items_0+1
+			else:
+				items_1 = items_1 +1
+		p_1 = float(items_1) / items_total
+		p_0 = float(items_0) / items_total
+	
+		if (p_0==0) or (p_1==0):
+			entropy_y=0
+		else:
+			entropy_y = -1* (  p_1*log2(p_1) + p_0*log2(p_0))
+		
+		#Split training set
+		[subleft, subright] = self.divide_training_set( training_set, split)
+
+		
+		items_1 =0
+		items_0 =0
+		items_subleft = len(subleft)
+		if not (items_subleft==0):
+			for item in subleft:
+				if(item[2] ==0):
+					items_0 = items_0+1
+				else:
+					items_1 = items_1 +1
+			p_1 = float(items_1) / items_subleft
+			p_0 = float(items_0) / items_subleft
+			if (p_0==0) or (p_1==0):
+				entropy_y_x_left =0
+			else: 
+				entropy_y_x_left = -1* (  p_1*log2(p_1) + p_0*log2(p_0))
+		else:
+			entropy_y_x_left = 0
+
+		p_left = float(items_subleft)/ items_total 
+
+		
+		items_1 =0
+		items_0 =0
+		items_subright = len(subright)
+		if not (items_subright==0):
+			for item in subright:
+				if(item[2] ==0):
+					items_0 = items_0+1
+				else:
+					items_1 = items_1 +1
+			p_1 = float(items_1) / items_subright
+			p_0 = float(items_0) / items_subright
+			if (p_0==0) or (p_1==0):
+				entropy_y_x_right =0
+			else:
+				entropy_y_x_right = -1* (  p_1*log2(p_1) + p_0*log2(p_0))
+		else:
+			entropy_y_x_right =0
+
+		p_right = float(items_subright)/items_total
+
+		entropy_y_x = p_right * entropy_y_x_right +  p_left * entropy_y_x_left
+
+		information_gain = entropy_y - entropy_y_x
+		
+		return_list.append(split)
+		return_list.append(information_gain)
+
+		if entropy_x > 0:
+			gain_ratio = information_gain/entropy_x
+			return_list.append(gain_ratio)
+		else:
+			return_list.append(None)
+
+		return return_list
+	
+
 	
 
 	def stopping_criteria(self, candidate_split, training_set):
@@ -315,9 +424,12 @@ class simple_tree:
 			max_gain_ratio_index=0
 			max_gain_ratio = gain_ratios[0][1]
 			for g in range(0, len(gain_ratios)):
-				if(max_gain_ratio > gain_ratios[g][1]):
+				if(max_gain_ratio < gain_ratios[g][1]):
 					max_gain_ratio_index = g
 					max_gain_ratio = gain_ratios[g][1]
+
+			#print (gain_ratios)
+			#print (gain_ratios[max_gain_ratio_index])
 			return gain_ratios[max_gain_ratio_index][0]
 
 			
