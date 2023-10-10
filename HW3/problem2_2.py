@@ -24,33 +24,7 @@ def euclidean_distance(a, b, f_size):
     b=np.array(b[0:f_size])
     return np.linalg.norm(a-b)
 	
-'''
-def knn_predictor(k, f_size, test_point, training_data):
-	last_min_distance = -sys.maxsize -1
-	curr_min_distance = sys.maxsize
-	curr_min_distance_entry = []
-	nearest_neighbours = []
-	for i in range(0,k):
-		curr_min_distance = sys.maxsize
-		for j in training_data:
-			distance = euclidean_distance(test_point, j, f_size)
-			if( (distance >= last_min_distance) and (distance < curr_min_distance)):
-				curr_min_distance = distance
-				curr_min_distance_entry =  j
-		nearest_neighbours.append(curr_min_distance_entry)
-		last_min_distance = curr_min_distance
-	vote0 =0 
-	vote1= 0
-	for nn in nearest_neighbours:
-		if nn[f_size] ==0:
-			vote0 = vote0+1
-		else:
-			vote1 = vote1+1
-	if(vote0>vote1):
-		test_point[f_size] =0
-	else:
-		test_point[f_size]=1
-'''
+
 
 def knn_predictor(k, f_size, test_point, training_data):
 	curr_min_distance_entry = []
@@ -119,7 +93,7 @@ for i in range(0,5):
 	
 
 	for l in check_set:
-		knn_predictor(10, 3000, l, training_set)
+		knn_predictor(1, 3000, l, training_set)
 
 	for m in range(0, len(check_set)):
 		if((test_set[m][3000]==0) and (check_set[m][3000]==0)):

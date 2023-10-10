@@ -195,6 +195,8 @@ print("For Log Reg")
 print(metrics.roc_auc_score(true_y_log_reg, confidence_log_reg))
 
 
+
+
 plt.plot(FPR1.tolist(), TPR1.tolist())
 plt.plot(FPR2.tolist(), TPR2.tolist())
 plt.xlabel("False Positive Rate", fontsize=10) # set x-axis label
@@ -203,6 +205,6 @@ plt.ylabel("True Positive Rate", fontsize=10) # set y-axis label
 legends_label = []
 legends_label.append("KNN with K=5")
 legends_label.append("Logistic Regression")
-plt.legend(legend_labels)
+plt.legend(legends_label)
 plt.show()
 	

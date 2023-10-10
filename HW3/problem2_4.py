@@ -68,7 +68,7 @@ partitions[2] = data[2*partition_size: 3*partition_size]
 partitions[3] = data[3*partition_size: 4*partition_size]
 partitions[4] = data[4*partition_size: 5*partition_size]
 y_a = []
-'''
+
 for knn in [1,3,5,7,10]:
 	accuracy =0
 	for i in range(0,5):
@@ -113,9 +113,9 @@ for knn in [1,3,5,7,10]:
 	accuracy = (accuracy/5)*100
 	y_a.append(accuracy)
 	print("k value = "+ str(knn) + "  Accuracy = "+ str(accuracy))
-'''
+
 x_a = [1,3,5,7,10]
-y_a = [83.32, 84.22, 84.08, 84.62, 84.54]
+
 
 
 plt.plot(x_a, y_a)
